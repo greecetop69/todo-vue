@@ -25,6 +25,8 @@ const props = defineProps(['task']);
 				{{ props.task.completed ? 'Done' : 'To-Do' }}
 			</label>
 		</div>
+
+		<span @click="store.deleteTask(props.task.id)" class="delete-btn">Delete</span>
 	</div>
 
 </template>
@@ -114,6 +116,16 @@ const props = defineProps(['task']);
 				}
 			}
 		}
+	}
+	.delete-btn {
+		position: absolute;
+		top: 10px;
+		right: 10px;
+		cursor: pointer;
+	}
+	.delete-btn:hover {
+		text-decoration: underline;
+		color: tan;
 	}
 }
 </style>

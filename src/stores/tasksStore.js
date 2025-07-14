@@ -1,21 +1,20 @@
 import { defineStore } from "pinia";
-import { computed, reactive, ref } from "vue";
+import { computed, ref } from "vue";
 
 export const useTasksStore = defineStore("tasks", () => {
-    let tasks = reactive(JSON.parse(localStorage.getItem("tasks")) || []);
+    const tasks = ref(JSON.parse(localStorage.getItem("tasks")) || []);
 
     const modalIsActive = ref(false);
-
     const filterBy = ref("");
 
     const filteredTasks = computed(() => {
         switch (filterBy.value) {
             case "todo":
-                return tasks.filter((task) => !task.completed);
+                return tasks.value.filter((task) => !task.completed);
             case "done":
-                return tasks.filter((task) => task.completed);
+                return tasks.value.filter((task) => task.completed);
             default:
-                return tasks;
+                return tasks.value;
         }
     });
 
@@ -25,13 +24,23 @@ export const useTasksStore = defineStore("tasks", () => {
 
     function addTask(newTask) {
         if (newTask.name && newTask.description) {
-            newTask.id = tasks.length
-                ? Math.max(...tasks.map((task) => task.id)) + 1
+            newTask.id = tasks.value.length
+                ? Math.max(...tasks.value.map((task) => task.id)) + 1
                 : 1;
-            tasks.push(newTask);
+            tasks.value.push(newTask);
+            localStorage.setItem("tasks", JSON.stringify(tasks.value));
             closeModal();
-        } else {
-            return;
+        }
+    }
+
+    function deleteTask(id) {
+        if (id) {
+            const index = tasks.value.findIndex((task) => task.id === id);
+            if (index !== -1) {
+                tasks.value.splice(index, 1);
+                localStorage.setItem("tasks", JSON.stringify(tasks.value));
+                console.log("Tasks after delete:", tasks.value);
+            }
         }
     }
 
@@ -44,11 +53,11 @@ export const useTasksStore = defineStore("tasks", () => {
     }
 
     function toggleCompleted(id) {
-        tasks.forEach((task) => {
-            if (task.id === id) {
-                task.completed = !task.completed;
-            }
-        });
+        const task = tasks.value.find((task) => task.id === id);
+        if (task) {
+            task.completed = !task.completed;
+            localStorage.setItem("tasks", JSON.stringify(tasks.value));
+        }
     }
 
     return {
@@ -58,6 +67,7 @@ export const useTasksStore = defineStore("tasks", () => {
         filteredTasks,
         setFilter,
         addTask,
+        deleteTask,
         openModal,
         closeModal,
         toggleCompleted,
